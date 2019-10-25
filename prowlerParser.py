@@ -82,7 +82,7 @@ df.rename(columns={'TITLE_TEXT': 'CHECK_NUMBER'}, inplace=True)
 # Write to output CSV file
 t = time.localtime()
 timestamp = time.strftime('%H%M%S_%d%m%Y', t)
-path = 'output'
+path = ''
 output_file_csv = os.path.join(path, 'output_'+timestamp+'.csv')
 output_file_word = os.path.join(path, 'output_'+timestamp+'.docx')
 
