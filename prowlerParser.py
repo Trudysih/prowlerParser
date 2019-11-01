@@ -63,7 +63,7 @@ def write_to_word_doc_list_form(dictChecks):
 
 def write_to_word_doc_table_form(dictChecks):
     doc = docx.Document()
-    doc.add_heading('Automation report', 0)
+    doc.add_heading('Prowler Scan Report', 0)
 
     # loop thru the dictionary, create 1 table for each object in the dictionary
     for k, v in dictChecks.items():
