@@ -5,6 +5,7 @@ import os
 import pprint
 import docx
 from docx.shared import Cm, Inches
+import argparse
 
 # Helper function to extract check number from 'TITLE_TEXT' column
 # Input: 'TITLE_TEXT' column string
@@ -38,7 +39,29 @@ def set_col_widths(table):
             row.cells[idx].width = width
 
 
-def write_to_word_doc(dictChecks):
+def write_to_word_doc_list_form(dictChecks):
+    doc = docx.Document()
+    doc.add_heading('Automation report', 0)
+
+    # loop thru the dictionary, create 1 table for each object in the dictionary
+    for k, v in dictChecks.items():
+        sample_df = v
+        tableDescription = str(k) + ": " + str(sample_df.values[0][3])
+
+        p = doc.add_paragraph()
+        runner = p.add_run(tableDescription + '\n')
+        runner.bold = True
+
+        # add the rest of the data frame
+        for i in range(sample_df.shape[0]):  # number of rows
+            doc.add_paragraph(str(sample_df.values[i, 2]))
+
+        # add spacing between each table
+        doc.add_paragraph('\n')
+        doc.save(output_file_word)
+
+
+def write_to_word_doc_table_form(dictChecks):
     doc = docx.Document()
     doc.add_heading('Automation report', 0)
 
@@ -52,15 +75,26 @@ def write_to_word_doc(dictChecks):
 
         # add the header row + make it bold
         t.cell(0, 0).paragraphs[0].add_run(tableDescription + '\n').bold = True
+        # doc.add_paragraph(tableDescription + '\n')
 
         # add the rest of the data frame
         for i in range(sample_df.shape[0]):  # number of rows
+            # doc.add_paragraph(str(sample_df.values[i, 2]))
             t.cell(i+1, 0).text = str(sample_df.values[i, 2])
 
         # add spacing between each table
         doc.add_paragraph('\n')
         doc.save(output_file_word)
 
+
+# set up argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('-o', '--tableOption', type=str, default='list', dest='option',
+                    help='key in \'table\' if you want the report to be in table format')
+
+args = parser.parse_args()
+option = args.option
+print(option)
 
 # Read in CSV file from prowler
 data = pd.read_csv('output.csv')
@@ -82,11 +116,14 @@ df.rename(columns={'TITLE_TEXT': 'CHECK_NUMBER'}, inplace=True)
 # Write to output CSV file
 t = time.localtime()
 timestamp = time.strftime('%H%M%S_%d%m%Y', t)
-path = ''
+path = '/Users/Clarkson/repos/prowlerParse/output'
 output_file_csv = os.path.join(path, 'output_'+timestamp+'.csv')
 output_file_word = os.path.join(path, 'output_'+timestamp+'.docx')
 
 # create dictionary of the dataframes that u want
 dictionary_of_checks = {k: v for k, v in df.groupby('CHECK_NUMBER')}
 # Use the dictionary to write to docx document
-write_to_word_doc(dictionary_of_checks)
+if (option == 'table'):
+    write_to_word_doc_table_form(dictionary_of_checks)
+else:
+    write_to_word_doc_list_form(dictionary_of_checks)
