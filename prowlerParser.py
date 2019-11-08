@@ -7,6 +7,11 @@ import docx
 from docx.shared import Cm, Inches
 import argparse
 
+from docx.shared import Pt
+
+
+
+
 # Helper function to extract check number from 'TITLE_TEXT' column
 # Input: 'TITLE_TEXT' column string
 # Output: String within square parentheses'[]', assuming the check number is always the first occurence
@@ -41,23 +46,38 @@ def set_col_widths(table):
 
 def write_to_word_doc_list_form(dictChecks):
     doc = docx.Document()
-    doc.add_heading('Automation report', 0)
+    doc.add_heading('Prowler Scan Report', 0)
+
+    # style = doc.styles['Normal']
+    # font = style.font
+    # font.name = 'Arial'
+    # font.size = Pt(10)
+    font = doc.styles['Normal'].font
+    font.name = 'Arial'
+
 
     # loop thru the dictionary, create 1 table for each object in the dictionary
     for k, v in dictChecks.items():
         sample_df = v
-        tableDescription = str(k) + ": " + str(sample_df.values[0][3])
+        tableDescription = "Check " + str(k) + ": " + str(sample_df.values[0][3])
 
         p = doc.add_paragraph()
         runner = p.add_run(tableDescription + '\n')
         runner.bold = True
-
+    
         # add the rest of the data frame
         for i in range(sample_df.shape[0]):  # number of rows
             doc.add_paragraph(str(sample_df.values[i, 2]))
 
         # add spacing between each table
         doc.add_paragraph('\n')
+        p2 = doc.add_paragraph()
+        runner2 = p2.add_run(str(sample_df.values[0, 4]))
+        runner2.italic = True
+        
+        # doc.add_paragraph(str(sample_df.values[0, 4]))
+        doc.add_paragraph('\n')
+
         doc.save(output_file_word)
 
 
@@ -84,6 +104,8 @@ def write_to_word_doc_table_form(dictChecks):
 
         # add spacing between each table
         doc.add_paragraph('\n')
+        doc.add_paragraph(str(sample_df.values[0, 4]))
+
         doc.save(output_file_word)
 
 
@@ -94,10 +116,9 @@ parser.add_argument('-o', '--tableOption', type=str, default='list', dest='optio
 
 args = parser.parse_args()
 option = args.option
-print(option)
 
 # Read in CSV file from prowler
-data = pd.read_csv('output.csv')
+data = pd.read_csv('output1.csv')
 
 # Filter results by columns I want
 data_filtered = data[['REGION', 'RESULT', 'TITLE_TEXT', 'NOTES']]
@@ -113,15 +134,21 @@ df['TITLE_TEXT'] = df['TITLE_TEXT'].apply(getCheckNumber)
 # rename 'TITLE_TEXT' to 'CHECK_NUMBER'
 df.rename(columns={'TITLE_TEXT': 'CHECK_NUMBER'}, inplace=True)
 
+df.to_csv("dftest.csv")
+cisdata = pd.read_csv('CIS.csv')
+results = df.merge(cisdata, on='CHECK_NUMBER')
+
 # Write to output CSV file
 t = time.localtime()
 timestamp = time.strftime('%H%M%S_%d%m%Y', t)
-path = '/Users/Clarkson/repos/prowlerParse/output'
+path = ''
 output_file_csv = os.path.join(path, 'output_'+timestamp+'.csv')
 output_file_word = os.path.join(path, 'output_'+timestamp+'.docx')
 
+
+
 # create dictionary of the dataframes that u want
-dictionary_of_checks = {k: v for k, v in df.groupby('CHECK_NUMBER')}
+dictionary_of_checks = {k: v for k, v in results.groupby('CHECK_NUMBER')}
 # Use the dictionary to write to docx document
 if (option == 'table'):
     write_to_word_doc_table_form(dictionary_of_checks)
