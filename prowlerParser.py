@@ -118,7 +118,7 @@ args = parser.parse_args()
 option = args.option
 
 # Read in CSV file from prowler
-data = pd.read_csv('output1.csv')
+data = pd.read_csv('output.csv')
 
 # Filter results by columns I want
 data_filtered = data[['REGION', 'RESULT', 'TITLE_TEXT', 'NOTES']]
@@ -134,7 +134,6 @@ df['TITLE_TEXT'] = df['TITLE_TEXT'].apply(getCheckNumber)
 # rename 'TITLE_TEXT' to 'CHECK_NUMBER'
 df.rename(columns={'TITLE_TEXT': 'CHECK_NUMBER'}, inplace=True)
 
-df.to_csv("dftest.csv")
 cisdata = pd.read_csv('CIS.csv')
 results = df.merge(cisdata, on='CHECK_NUMBER')
 
