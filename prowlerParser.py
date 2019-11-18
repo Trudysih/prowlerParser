@@ -118,7 +118,7 @@ args = parser.parse_args()
 option = args.option
 
 # Read in CSV file from prowler
-data = pd.read_csv('output.csv')
+data = pd.read_csv('output.csv', error_bad_lines=False)
 
 # Filter results by columns I want
 data_filtered = data[['REGION', 'RESULT', 'TITLE_TEXT', 'NOTES']]
